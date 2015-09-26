@@ -15,7 +15,6 @@ for i,button in ipairs(ui.classes) do
               function (...)
                  ui.currentId = i
                  ui.currentClass = state.classes[i]
-                 state.request = {}
               end)
 end
 

@@ -86,8 +86,24 @@ function display.update()
           for i=1, state.network_table[ui.currentId].i do
              deconvnet:add(state.network.modules[i])
           end
-          deconvnet:backward(state.rawFrame, state.network.modules[state.network_table[ui.currentId].i].output)
-          image.display{image=deconvnet.modules[1].gradInput,
+
+          --- Guided back-propogation of ReLU
+          -- http://arxiv.org/pdf/1412.6806v3.pdf
+          local currentGradOutput = state.network.modules[state.network_table[ui.currentId].i].output
+          local currentModule = deconvnet.modules[#deconvnet.modules]
+          for i=#deconvnet.modules-1,1,-1 do
+              local previousModule = deconvnet.modules[i]
+              if currentModule.__typename =="nn.ReLU" then 
+                 currentGradOutput = currentModule:backward(previousModule.output, currentGradOutput)
+                 currentGradOutput = currentModule:forward(currentGradOutput)
+              else
+                 currentGradOutput = currentModule:backward(previousModule.output, currentGradOutput)
+              end
+              currentModule.gradInput = currentGradOutput
+              currentModule = previousModule
+          end
+          currentGradOutput = currentModule:backward(state.rawFrame, currentGradOutput)
+          image.display{image=currentGradOutput,
                         win=painter,
                         x= 0,
                         y=options.eye * window_zoom + 60,

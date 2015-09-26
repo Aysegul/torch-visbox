@@ -2,22 +2,19 @@ local display = {}
 local source = image.Camera{}
 -- function to update display
 function display.update()
-   -- resize display ?
    if ui.resize then
       widget.geometry = qt.QRect{x=100,y=100,width=1080,height=1080}
       ui.resize = false
    end
 
-   -- display...
    painter:gbegin()
    painter:showpage()
-
 
    options.zoom =  widget.doubleSpinBox_2.value
    options.zoom_f = widget.doubleSpinBox_1.value
    window_zoom = 1
 
-  -- capture next frame
+   -- capture next frame
    state.rawFrame = source:forward()
 
    -- crop square
@@ -76,33 +73,33 @@ function display.update()
       painter:setcolor('red')
       painter:setlinewidth(3)
 
-	  if (x>=0 and x<rows) and (y>=0 and y<cols) and ((x+1)+(y)*rows <= no_features)then
-         painter:rectangle(x*(x_features+1)*options.zoom_f + options.eye*window_zoom +20, y*(y_features+1)*options.zoom_f+30, x_features*options.zoom_f, y_features*options.zoom_f)
-         painter:stroke()
-         painter:setfont(qt.QFont{serif=false,italic=false,size=14})
+      if (x>=0 and x<rows) and (y>=0 and y<cols) and ((x+1)+(y)*rows <= no_features)then
+          painter:rectangle(x*(x_features+1)*options.zoom_f + options.eye*window_zoom +20, y*(y_features+1)*options.zoom_f+30, x_features*options.zoom_f, y_features*options.zoom_f)
+          painter:stroke()
+          painter:setfont(qt.QFont{serif=false,italic=false,size=14})
 
-         local feature_map = state.network.modules[state.network_table[ui.currentId].i].output[(x+1)+(y)*rows]:clone()
-         state.network.modules[state.network_table[ui.currentId].i].output:fill(0)
-         state.network.modules[state.network_table[ui.currentId].i].output[(x+1)+(y)*rows]:copy(feature_map)
-         --local output =  state.network:forward(state.rawFrame)
-         state.network:backward(state.rawFrame, output)
-                   image.display{image=state.network.modules[1].gradInput,
-                   win=painter,
-                   x= 0,
-                   y=options.eye * window_zoom + 60,
-                   zoom = window_zoom}
+          local feature_map = state.network.modules[state.network_table[ui.currentId].i].output[(x+1)+(y)*rows]:clone()
+          state.network.modules[state.network_table[ui.currentId].i].output:fill(0)
+          state.network.modules[state.network_table[ui.currentId].i].output[(x+1)+(y)*rows]:copy(feature_map)
 
-         image.display{image=feature_map,
-                   win=painter,
-                   x= 0,
-                   y=2*options.eye * window_zoom + 90,
-                   zoom = options.zoom}
-
+          local deconvnet = nn.Sequential()
+          for i=1, state.network_table[ui.currentId].i do
+             deconvnet:add(state.network.modules[i])
+          end
+          deconvnet:backward(state.rawFrame, state.network.modules[state.network_table[ui.currentId].i].output)
+          image.display{image=deconvnet.modules[1].gradInput,
+                        win=painter,
+                        x= 0,
+                        y=options.eye * window_zoom + 60,
+                        zoom = window_zoom}
+          image.display{image=feature_map,
+                        win=painter,
+                        x= 0,
+                        y=2*options.eye * window_zoom + 90,
+                        zoom = options.zoom}
       end   
    end
-       
    painter:gend()
-
 end
 
 

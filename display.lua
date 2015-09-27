@@ -82,17 +82,12 @@ function display.update()
           state.network.modules[state.network_table[ui.currentId].i].output:fill(0)
           state.network.modules[state.network_table[ui.currentId].i].output[(x+1)+(y)*rows]:copy(feature_map)
 
-          local deconvnet = nn.Sequential()
-          for i=1, state.network_table[ui.currentId].i do
-             deconvnet:add(state.network.modules[i])
-          end
-
           --- Guided back-propogation of ReLU
           -- http://arxiv.org/pdf/1412.6806v3.pdf
           local currentGradOutput = state.network.modules[state.network_table[ui.currentId].i].output
-          local currentModule = deconvnet.modules[#deconvnet.modules]
-          for i=#deconvnet.modules-1,1,-1 do
-              local previousModule = deconvnet.modules[i]
+          local currentModule = state.network.modules[state.network_table[ui.currentId].i]
+          for i=state.network_table[ui.currentId].i-1,1,-1 do
+              local previousModule = state.network.modules[i]
               if currentModule.__typename =="nn.ReLU" then 
                  currentGradOutput = currentModule:backward(previousModule.output, currentGradOutput)
                  currentGradOutput = currentModule:forward(currentGradOutput)

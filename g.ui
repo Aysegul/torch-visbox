@@ -145,7 +145,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Selected feature zoom</string>
+        <string>Selected Feature Map Zoom</string>
        </property>
       </widget>
      </item>
@@ -171,7 +171,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Feature Map zoom</string>
+        <string>Feature Maps Zoom</string>
        </property>
       </widget>
      </item>

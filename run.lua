@@ -33,7 +33,7 @@ if options.network == 'overfeat.net' then
        git clone https://github.com/jhjin/overfeat-torch
        cd overfeat-torch
        echo "torch.save('overfeat.net', net)" >> run.lua
-       . install.sh && th run.lua && mv model.net .. && cd ..
+       . install.sh && th run.lua && mv overfeat.net .. && cd ..
      ]])
    end
 end
